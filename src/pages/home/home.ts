@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { Component, ViewChild } from '@angular/core';
+import { NavController, Slides } from 'ionic-angular';
 import * as WC from "woocommerce-api";
 
 @Component({
@@ -10,8 +10,14 @@ export class HomePage {
 
   WooCommerce: any;
   products: any[];
+  page: number;
+  moreProducts: any[];
+
+  @ViewChild('productSlides') productSlides: Slides;
 
   constructor(public navCtrl: NavController) {
+
+    this.page = 2;
 
     this.WooCommerce = WC({
       url: 'http://localhost/wordpress/',
@@ -21,13 +27,7 @@ export class HomePage {
       version: 'wc/v2'
     });
 
-    // this.WooCommerce.getAsync("products").then( (data) => {
-    //   // console.log(JSON.parse(data.body));
-    //   this.products = JSON.parse(data.body);
-    //   console.log(this.products)
-    // }, (err) => {
-    //   console.log(err)
-    // })
+    this.loadMoreProducts();
 
     this.WooCommerce.getAsync("products").then( (data) => {
       console.log(JSON.parse(data.body));
@@ -36,6 +36,25 @@ export class HomePage {
       console.log(err)
     })
 
+  }
+
+  ionViewDidLoad() {
+    setInterval(() => {
+
+      if(this.productSlides.getActiveIndex() == this.productSlides.length() -1)
+        this.productSlides.slideTo(0);
+
+      this.productSlides.slideNext();
+    }, 3000)
+  }
+
+  loadMoreProducts() {
+    this.WooCommerce.getAsync("products?page=" + this.page).then( (data) => {
+      console.log(JSON.parse(data.body));
+      this.moreProducts = JSON.parse(data.body);
+    }, (err) => {
+      console.log(err)
+    })
   }
 
 }
